@@ -120,18 +120,24 @@ const handleEvent = (() => {
     const newTodoSubmit = (e) => {
         e.preventDefault();
 
+        console.log("e", e);
+
         const fd = new FormData(e.target);
+
+        console.log("fd", fd);
 
         const data = {
             title: fd.get("title").trim(),
             status: "PENDING",
             description: fd.get("description") ?? "",
-            dueDate: fd.get("due_date") ?? "",
+            dueDate: fd.get("dueDate") ?? "",
             priority: fd.get("priority")  ?? "LOW",
             notes: fd.get("notes") ?? "",
             checklist: [],
             project: fd.get("project")
         };
+
+        console.log("data", data)
 
         for (const [key, value] of fd.entries()) {
             const m = key.match(/^checklist\[(\d+)\]\[(text|done)\]$/);
@@ -148,9 +154,9 @@ const handleEvent = (() => {
 
         data.checklist = data.checklist.filter(i => i.job);
 
-        const project = projectList.find(p => p.UID === data.projectUID);
+        const project = projectList.find(p => p.UID === data.project);
         if (!project) {
-            console.error("Project not found for UID:", data.projectUID);
+            console.error("Project not found for UID:", data.project);
             return;
         }
 
@@ -178,4 +184,3 @@ const handleEvent = (() => {
 
     return { newProjSubmit, newTodoSubmit, deleteProj, deleteTodo}
 })();
-

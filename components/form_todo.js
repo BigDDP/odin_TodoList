@@ -1,4 +1,4 @@
-import { projectList, priority } from "./models/variables.js";
+import { projectList, priority } from "../models/variables.js";
 
 const formStructure = [
   ["fieldset1", [{ type: "input", value: "title" }, { type: "date", value: "dueDate" }]],
@@ -155,7 +155,15 @@ function fillSelect(selectEl, items, { valueKey = null, labelKey = null } = {}) 
     form.appendChild(fieldset);
   }
 
+  const submitBtn = document.createElement("button");
+  submitBtn.type = "submit";
+  submitBtn.id = "submitTodo";
+  submitBtn.textContent = "Submit Item";
+  form.appendChild(submitBtn);
+  
   content.appendChild(form);
+
+  
 })();
 
 function refreshProjectOptions() {
