@@ -1,3 +1,4 @@
+import { projectList, priority } from "./models/variables.js";
 
 const formStructure = [
   ["fieldset1", [{ type: "input", value: "title" }, { type: "date", value: "dueDate" }]],
@@ -7,7 +8,12 @@ const formStructure = [
   ["fieldset5", [{ type: "checklist", value: "checklist" }]]
 ];
 
-let checklist = [];
+const content = document.getElementById("content");
+
+const form = document.createElement("form");
+form.style.display = "none";
+form.method = "post";
+form.action = "";
 
 function createChecklistWidget(name) {
   const wrapper = document.createElement("div");
@@ -31,14 +37,13 @@ function createChecklistWidget(name) {
     const cb = document.createElement("input");
     cb.type = "checkbox";
     cb.checked = checked;
+    cb.dataset.role = "done";
 
     const input = document.createElement("input");
     input.type = "text";
     input.placeholder = "Checklist item…";
     input.value = text;
-
     input.dataset.role = "text";
-    cb.dataset.role = "done";
 
     const delBtn = document.createElement("button");
     delBtn.type = "button";
@@ -48,11 +53,8 @@ function createChecklistWidget(name) {
       renumber();
     });
 
-    row.appendChild(cb);
-    row.appendChild(input);
-    row.appendChild(delBtn);
+    row.append(cb, input, delBtn);
     list.appendChild(row);
-
     renumber();
   }
 
@@ -66,89 +68,102 @@ function createChecklistWidget(name) {
       doneInput.name = `${name}[${idx}][done]`;
       doneInput.value = doneInput.checked ? "1" : "0";
 
-      doneInput.addEventListener("change", () => {
+      doneInput.onchange = () => {
         doneInput.value = doneInput.checked ? "1" : "0";
-      });
+      };
     });
   }
 
   addBtn.addEventListener("click", () => addItem());
 
   controls.appendChild(addBtn);
-  wrapper.appendChild(list);
-  wrapper.appendChild(controls);
+  wrapper.append(list, controls);
 
   addItem();
-
   return wrapper;
 }
 
-const content = document.getElementById("content");
+function fillSelect(selectEl, items, { valueKey = null, labelKey = null } = {}) {
+  while (selectEl.options.length > 1) selectEl.remove(1);
 
-const form = document.createElement("form");
-form.style.display = "none";
-form.method = "post";
-form.action = "";
-
-for (let i = 0; i < formStructure.length; i++) {
-  const [fieldsetName, fields] = formStructure[i];
-
-  const fieldset = document.createElement("fieldset");
-  fieldset.name = fieldsetName;
-
-  for (let j = 0; j < fields.length; j++) {
-    const field = fields[j];
-
-    const label = document.createElement("label");
-    label.textContent = field.value;
-    label.htmlFor = field.value;
-
-    let node;
-
-    switch (field.type) {
-      case "input": {
-        node = document.createElement("input");
-        node.type = "text";
-        node.name = field.value;
-        node.id = field.value;
-        break;
-      }
-      case "date": {
-        node = document.createElement("input");
-        node.type = "date";
-        node.name = field.value;
-        node.id = field.value;
-        break;
-      }
-      case "dropdown": {
-        node = document.createElement("select");
-        node.name = field.value;
-        node.id = field.value;
-        node.appendChild(new Option("Select…", ""));
-        break;
-      }
-      case "textarea": {
-        node = document.createElement("textarea");
-        node.name = field.value;
-        node.id = field.value;
-        break;
-      }
-      case "checklist": {
-        // label + widget
-        node = createChecklistWidget(field.value);
-        break;
-      }
-      default:
-        continue;
-    }
-
-    fieldset.appendChild(label);
-    fieldset.appendChild(node);
-  }
-
-  form.appendChild(fieldset);
+  items.forEach(item => {
+    const value = valueKey ? item[valueKey] : item;
+    const label = labelKey ? item[labelKey] : item;
+    selectEl.appendChild(new Option(label, value));
+  });
 }
 
-content.appendChild(form);
+(function buildAndAppend() {
+  for (let i = 0; i < formStructure.length; i++) {
+    const [fieldsetName, fields] = formStructure[i];
+    const fieldset = document.createElement("fieldset");
+    fieldset.name = fieldsetName;
+
+    for (let j = 0; j < fields.length; j++) {
+      const field = fields[j];
+
+      const label = document.createElement("label");
+      label.textContent = field.value;
+      label.htmlFor = field.value;
+
+      let node;
+
+      switch (field.type) {
+        case "input":
+          node = document.createElement("input");
+          node.type = "text";
+          node.name = field.value;
+          node.id = field.value;
+          break;
+
+        case "date":
+          node = document.createElement("input");
+          node.type = "date";
+          node.name = field.value;
+          node.id = field.value;
+          break;
+
+        case "dropdown":
+          node = document.createElement("select");
+          node.name = field.value;
+          node.id = field.value;
+          node.appendChild(new Option("Select…", ""));
+
+          if (field.value === "priority") {
+            fillSelect(node, priority);
+          }
+
+          if (field.value === "project") {
+            fillSelect(node, projectList, { valueKey: "UID", labelKey: "title" });
+          }
+          break;
+
+        case "textarea":
+          node = document.createElement("textarea");
+          node.name = field.value;
+          node.id = field.value;
+          break;
+
+        case "checklist":
+          node = createChecklistWidget(field.value);
+          break;
+      }
+
+      fieldset.append(label, node);
+    }
+
+    form.appendChild(fieldset);
+  }
+
+  content.appendChild(form);
+})();
+
+function refreshProjectOptions() {
+  const select = form.querySelector('select[name="project"]');
+  if (!select) return;
+
+  fillSelect(select, projectList, { valueKey: "UID", labelKey: "title" });
+}
 
 export default form;
+export { refreshProjectOptions };

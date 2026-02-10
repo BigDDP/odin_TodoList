@@ -19,4 +19,19 @@ function removeTodo(todoUID) {
   if (index !== -1) todoList.splice(index, 1);
 }
 
-export { projectList, todoList, addProject, addTodo, removeProject, removeTodo }
+let priority = [
+  "LOW",
+  "MEDIUM",
+  "HIGH",
+  "IMMEDIATE"
+]
+
+let status = [
+  "PENDING",
+  "STARTED",
+  "CANCELLED",
+  "DROPPED",
+  "COMPLETED"
+]
+
+export { projectList, todoList, priority, status, addProject, addTodo, removeProject, removeTodo }

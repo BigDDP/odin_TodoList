@@ -1,6 +1,6 @@
 import initialiseProject from "./functions.js"
-import { projectList, todoList } from "./variables.js"
-import { Todo, Project } from "./classes.js"
+import { projectList, todoList, status, priority } from "./models/variables.js"
+import { Todo, Project } from "./models/classes.js"
 
 (() => {
     const defalutProject = new Project(["Default", []]);
@@ -13,9 +13,9 @@ import { Todo, Project } from "./classes.js"
             title: "Finish project report",
             description: "Complete the final draft and submit it",
             dueDate: "2026-02-15",
-            priority: "High",
+            priority: priority[2],
             notes: "Double-check formatting before submission",
-            status: "Started",
+            status: status[4],
             checklist: [
                 { job: "Write conclusion", status: false },
                 { job: "Review Grammer", status: false },
@@ -27,9 +27,9 @@ import { Todo, Project } from "./classes.js"
             title: "Grocery shopping",
             description: "Buy items for the week",
             dueDate: "2026-02-10",
-            priority: "Medium",
+            priority: priority[1],
             notes: "Check for discounts",
-            status: "Pending",
+            status: status[1],
             checklist: [
                 { job: "Milk", status: false },
                 { job: "Egg", status: false },
@@ -48,6 +48,7 @@ import { Todo, Project } from "./classes.js"
 
     console.log("Initial Todo: ", todoList);
     console.log("Initial Project", defalutProject);
+    console.log("Init Over ---");
 })();
 
 initialiseProject();

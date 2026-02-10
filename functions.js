@@ -1,8 +1,8 @@
-import { projectList, todoList, addProject, addTodo, removeProject, removeTodo } from "./variables.js"
-import { Todo, Project } from "./classes.js"
+import { projectList, todoList, addProject, addTodo, removeProject, removeTodo } from "./models/variables.js"
+import { Todo, Project } from "./models/classes.js"
 
 import formProj from "./components/form_proj.js"
-import formTodo from "./components/form_todo.js"
+import formTodo, { refreshProjectOptions } from "./components/form_todo.js"
 
 const handleDom = () => {
     const toggleProjPopup = () => {
@@ -13,15 +13,72 @@ const handleDom = () => {
         if (!isHidden) formProj.reset();
     }
 
-    const toggleTodoPopup = () => {
-        let isHidden = formTodo.style.display === "none";
+    const toggleTodoPopup = (todo = null) => {
+    const isHidden = formTodo.style.display === "none";
 
-        formTodo.style.display = isHidden ? "block" : "none";
+    if (isHidden) {
+        // opening
+        refreshProjectOptions();
+        formTodo.style.display = "block";
 
-        if (!isHidden) formTodo.reset()
+        if (!todo) {
+        formTodo.reset();
+        return;
+        }
+
+        // populate fields (edit mode)
+        formTodo.querySelector('[name="title"]').value = todo.title ?? "";
+        formTodo.querySelector('[name="dueDate"]').value = todo.dueDate ?? "";
+        formTodo.querySelector('[name="description"]').value = todo.description ?? "";
+        formTodo.querySelector('[name="notes"]').value = todo.notes ?? "";
+        formTodo.querySelector('[name="priority"]').value = todo.priority ?? "";
+        formTodo.querySelector('[name="project"]').value = todo.project?.UID ?? "";
+
+        // rebuild checklist UI
+        const widget = formTodo.querySelector('.checklist[data-name="checklist"]');
+        const list = widget?.querySelector(".checklist-list");
+        if (list) {
+        list.innerHTML = "";
+
+        todo.checklist?.forEach(({ job, status }) => {
+            const row = document.createElement("div");
+            row.className = "checklist-row";
+
+            const cb = document.createElement("input");
+            cb.type = "checkbox";
+            cb.checked = !!status;
+            cb.dataset.role = "done";
+
+            const input = document.createElement("input");
+            input.type = "text";
+            input.placeholder = "Checklist item…";
+            input.value = job ?? "";
+            input.dataset.role = "text";
+
+            const idx = list.children.length;
+            input.name = `checklist[${idx}][text]`;
+            cb.name = `checklist[${idx}][done]`;
+            cb.value = cb.checked ? "1" : "0";
+            cb.onchange = () => cb.value = cb.checked ? "1" : "0";
+
+            const delBtn = document.createElement("button");
+            delBtn.type = "button";
+            delBtn.textContent = "Delete";
+            delBtn.addEventListener("click", () => row.remove());
+
+            row.append(cb, input, delBtn);
+            list.appendChild(row);
+        });
+        }
+
+    } else {
+        // closing
+        formTodo.style.display = "none";
+        formTodo.reset();
     }
-    
-    return {toggleProjPopup,toggleTodoPopup};
+    };
+
+    return { toggleProjPopup, toggleTodoPopup };
 };
 
 export default () => {
@@ -60,12 +117,65 @@ const handleEvent = (() => {
         handleDom().toggleProjPopup();
     };
 
+    const newTodoSubmit = (e) => {
+        e.preventDefault();
 
-    const deleteProj = (e) => {
-        let index = projectList.indexOf(e.UID);
-        projectList.splice(index, 1);
+        const fd = new FormData(e.target);
+
+        const data = {
+            title: fd.get("title").trim(),
+            status: "PENDING",
+            description: fd.get("description") ?? "",
+            dueDate: fd.get("due_date") ?? "",
+            priority: fd.get("priority")  ?? "LOW",
+            notes: fd.get("notes") ?? "",
+            checklist: [],
+            project: fd.get("project")
+        };
+
+        for (const [key, value] of fd.entries()) {
+            const m = key.match(/^checklist\[(\d+)\]\[(text|done)\]$/);
+            if (!m) continue;
+
+            const idx = Number(m[1]);
+            const field = m[2];
+
+            if (!data.checklist[idx]) data.checklist[idx] = { job: "", status: false };
+
+            if (field === "text") data.checklist[idx].job = String(value).trim();
+            if (field === "done") data.checklist[idx].status = value === "1";
+        }
+
+        data.checklist = data.checklist.filter(i => i.job);
+
+        const project = projectList.find(p => p.UID === data.projectUID);
+        if (!project) {
+            console.error("Project not found for UID:", data.projectUID);
+            return;
+        }
+
+        const newTodoObj = new Todo({
+            ...data,
+            project
+        });
+
+        project.todo.push(newTodoObj);
+        todoList.push(newTodoObj);
+
+        console.log("New Todo:", newTodoObj);
+        console.log("Attached to:", project);
+
+        handleDom().toggleTodoPopup();    
     };
 
-    return { newProjSubmit, deleteProj }
+    const deleteProj = (e) => {
+        removeProject(e.UID);
+    };
+
+    const deleteTodo = (e) => {
+        removeTodo(e.UID);
+    };
+
+    return { newProjSubmit, newTodoSubmit, deleteProj, deleteTodo}
 })();
 

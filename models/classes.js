@@ -1,7 +1,7 @@
 class Todo {
     constructor(item) {
         this.title = item.title
-        this.status = item.status
+        this.status = item.status ?? "STARTED"
         this.description = item.description
         this.dueDate = item.dueDate
         this.priority = item.priority
