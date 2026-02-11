@@ -1,18 +1,17 @@
 import { projectList, status, updateTodoStatus, updateChecklistStatus, editTodo, removeTodo } from "../models/variables.js";
+import { projectSelected } from "./sidebar.js";
 
 export default function projectSelect(projUID) {
-    let projectSelected = !projUID ? projectList[0] : projectList.find(p => p.UID === projUID);
-
-    console.log("tablePage Init", projectSelected)
+    const projectSelected = projectList.find(p => p.UID === projUID);
 
     generateTable(projectSelected);
-    
-    return;
 };
 
 function generateTable( proj ) {
     const header = document.getElementById("p_title");
     const table = document.querySelector("table");
+
+    table.innerHTML = "";
 
     header.textContent = proj.title;
 
@@ -50,6 +49,8 @@ function generateTable( proj ) {
 };
 
 export function generateRow(todo) {
+    if (projectSelected !== todo.project) return;
+
     const tbody = document.querySelector("tbody")
 
     const tr = document.createElement("tr");

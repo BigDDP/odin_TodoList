@@ -4,6 +4,7 @@ import { Todo, Project } from "./models/classes.js"
 import formProj from "./components/form_proj.js"
 import formTodo, { refreshProjectOptions } from "./components/form_todo.js"
 import buildTable, {generateRow} from "./components/table.js"
+import buildSidebar, { appendSidebar, selectProject } from "./components/sidebar.js"
 
 const handleDom = () => {
     const toggleProjPopup = () => {
@@ -80,7 +81,7 @@ const handleDom = () => {
 };
 
 export default () => {
-    buildTable();
+    buildSidebar(projectList)
 
     const newProjBtn = document.getElementById("new_project");
     const newTodoBtn = document.getElementById("new_todo");
@@ -115,6 +116,8 @@ const handleEvent = (() => {
         projectList.push(newProjObj);
         console.log("New Project: ", projectList);
         handleDom().toggleProjPopup();
+        
+        appendSidebar(newProjObj.UID);
     };
 
     const newTodoSubmit = (e) => {
