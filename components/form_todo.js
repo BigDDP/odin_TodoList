@@ -170,8 +170,11 @@ function refreshProjectOptions() {
   const select = form.querySelector('select[name="project"]');
   if (!select) return;
 
+  const prev = select.value;
   fillSelect(select, projectList, { valueKey: "UID", labelKey: "title" });
+  if ([...select.options].some(o => o.value === prev)) select.value = prev; 
 }
+
 
 export default form;
 export { refreshProjectOptions };

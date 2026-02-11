@@ -3,10 +3,74 @@ import { projectList, todoList, status, priority } from "./models/variables.js"
 import { Todo, Project } from "./models/classes.js"
 
 (() => {
-    const defalutProject = new Project(["Default", []]);
+    let storageAvailable = storageFunctions().checkAvailable("localStorage");
+    console.log("Storage Available: ", storageAvailable);
 
-    console.log("Default Project: ", defalutProject);
-    projectList.push(defalutProject);
+  if (storageAvailable) {
+    const storedProjects = localStorage.getItem("projectList");
+    const storedTodos = localStorage.getItem("todoList");
+
+    if (!storedProjects || !storedTodos) {
+      defaultSetup();
+    } else {
+        const storedProjects = localStorage.getItem("projectList");
+        const storedTodos = localStorage.getItem("todoList");
+
+        const projectsRaw = JSON.parse(storedProjects);
+        const todosRaw = JSON.parse(storedTodos);
+
+        projectList.length = 0;
+        todoList.length = 0;
+
+        projectList.push(...projectsRaw.map(p => new Project(p)));
+        todoList.push(...todosRaw.map(t => new Todo(t)));
+
+        projectList.forEach(p => (p.todo = []));
+        todoList.forEach(t => {
+        const proj = projectList.find(p => p.UID === t.project);
+        if (proj) proj.todo.push(t);
+        });
+    }
+  } else {
+    defaultSetup();
+  };
+
+    console.log("Initial Todo: ", todoList);
+    console.log("Initial Project", projectList);
+    console.log("Init Over ---");
+
+    initialiseProject();
+})();
+
+
+function storageFunctions() {
+        const checkAvailable = (type) => {
+        let storage;
+        try {
+            storage = window[type];
+            const x = "__storage_test__";
+            storage.setItem(x, x);
+            storage.removeItem(x);
+            return true;
+        } catch (e) {
+            return (
+            e instanceof DOMException &&
+            e.name === "QuotaExceededError" &&
+            // acknowledge QuotaExceededError only if there's something already stored
+            storage &&
+            storage.length !== 0
+            );
+        }
+    }
+    return {checkAvailable}
+}
+
+function defaultSetup() {
+    const defaultProject = new Project(["Default", []]);
+
+    projectList.length = 0;
+    todoList.length = 0;
+    projectList.push(defaultProject);
 
     const initialTodo = [
         {
@@ -21,7 +85,7 @@ import { Todo, Project } from "./models/classes.js"
                 { job: "Review Grammer", status: false },
                 { job: "Export to PDF", status: false }
             ],
-            project: defalutProject
+            project: defaultProject.UID
         },
         {
             title: "Grocery shopping",
@@ -35,20 +99,16 @@ import { Todo, Project } from "./models/classes.js"
                 { job: "Egg", status: false },
                 { job: "Chocolate", status: false }
             ],
-            project: defalutProject
+            project: defaultProject.UID
         }
     ];
 
     initialTodo.forEach(item => {
-        const newTodoObj = new Todo(item);
+    const todo = new Todo({ ...item, project: defaultProject.UID });
+    defaultProject.todo.push(todo);
+    todoList.push(todo);
+  });
 
-        defalutProject.todo.push(newTodoObj);
-        todoList.push(newTodoObj);
-    });
-
-    console.log("Initial Todo: ", todoList);
-    console.log("Initial Project", defalutProject);
-    console.log("Init Over ---");
-})();
-
-initialiseProject();
+  localStorage.setItem("projectList", JSON.stringify(projectList));
+  localStorage.setItem("todoList", JSON.stringify(todoList));
+};

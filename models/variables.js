@@ -9,18 +9,18 @@ function addTodo(todo) {
   todoList.push(todo);
 }
 
-function updateChecklistStatus (todo, checklistJob, status) {
-  let item = (todo.checklist).find(j => j.job === checklistJob);
 
+function updateChecklistStatus(todo, checklistJob, status) {
+  const item = todo.checklist?.find(j => j.job === checklistJob);
+  if (!item) return;
   item.status = status;
-
-  console.log(todo)
 }
 
 function updateTodoStatus(todoUID, status) {
-  let todo = todoList.find(t => t.UID === todoUID);
+  const todo = todoList.find(t => t.UID === todoUID);
+  if (!todo) return;
   todo.status = status;
-};
+}
 
 function editTodo(todoUID) {
   console.log("EditTodo")
@@ -28,23 +28,39 @@ function editTodo(todoUID) {
 
 function removeProject(projectUID) {
   const index = projectList.findIndex(p => p.UID === projectUID);
-  if (index !== -1) projectList.splice(index, 1);
+  if (index === -1) return;
+
+  for (let i = todoList.length - 1; i >= 0; i--) {
+    const t = todoList[i];
+    const projUID = typeof t.project === "string" ? t.project : t.project?.UID;
+    if (projUID === projectUID) todoList.splice(i, 1);
+  }
+
+  projectList.splice(index, 1);
 }
 
 function removeTodo(todoUID) {
   if (!todoUID) return;
 
-  let todo = todoList.find(t => t.UID === todoUID);
-  let proj = todo.project.todo;
+  const todoIndex = todoList.findIndex(t => t.UID === todoUID);
+  if (todoIndex === -1) return;
 
-  const projIndex = proj.findIndex(t => t.UID === todoUID);
-  const index = todoList.findIndex(t => t.UID === todoUID);
+  const todo = todoList[todoIndex];
 
-  if (projIndex !== -1) proj.splice(index, 1);
-  if (index !== -1) todoList.splice(index, 1);
+  const projUID = typeof todo.project === "string" ? todo.project : todo.project?.UID;
+
+  const project = projectList.find(p => p.UID === projUID);
+
+  if (project?.todo) {
+    const projIndex = project.todo.findIndex(t => t.UID === todoUID);
+    if (projIndex !== -1) project.todo.splice(projIndex, 1);
+  }
+
+  todoList.splice(todoIndex, 1);
 
   console.log(todoList, projectList);
 }
+
 
 let priority = [
   "LOW",

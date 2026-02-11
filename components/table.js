@@ -1,57 +1,49 @@
 import { projectList, status, updateTodoStatus, updateChecklistStatus, editTodo, removeTodo } from "../models/variables.js";
-import { projectSelected } from "./sidebar.js";
 
 export default function projectSelect(projUID) {
-    const projectSelected = projectList.find(p => p.UID === projUID);
+  const proj = projectList.find(p => p.UID === projUID);
+  if (!proj) return;
 
-    generateTable(projectSelected);
-};
+  generateTable(proj, projUID);
+}
 
-function generateTable( proj ) {
-    const header = document.getElementById("p_title");
-    const table = document.querySelector("table");
+function generateTable(proj, projUID) {
+  const header = document.getElementById("p_title");
+  const table = document.querySelector("table");
 
-    table.innerHTML = "";
+  table.innerHTML = "";
+  table.dataset.uid = proj.UID;
 
-    header.textContent = proj.title;
+  header.textContent = proj.title;
 
-    const colgroup = document.createElement("colgroup");
+  const colgroup = document.createElement("colgroup");
+  for (let i = 0; i < 5; i++) colgroup.appendChild(document.createElement("col"));
+  table.appendChild(colgroup);
 
-    for (let i = 0; i < 5; i++) {
-        let col = document.createElement("col");
-        colgroup.appendChild(col);
-    }
+  const thead = document.createElement("thead");
+  const headRow = document.createElement("tr");
+  ["", "General", "Checklist", "Notes"].forEach(text => {
+    const th = document.createElement("th");
+    th.textContent = text;
+    headRow.appendChild(th);
+  });
+  thead.appendChild(headRow);
 
-    table.appendChild(colgroup);
+  const tbody = document.createElement("tbody");
+  table.append(thead, tbody);
 
-    const thead = document.createElement("thead");
-
-    const headRow = document.createElement("tr");
-
-    let headers = ["", "General", "Checklist", "Notes"]
-    headers.forEach(text => {
-        const th = document.createElement("th");
-        th.textContent = text;
-        headRow.appendChild(th);
-    });
-
-    thead.appendChild(headRow);
-
-    const tbody = document.createElement("tbody");
-
-    table.append(thead, tbody);
-
-    const allTodos = proj.todo;
-
-    allTodos.forEach(todo => {
-        generateRow(todo);
+  (proj.todo ?? []).forEach(todo => {
+    generateRow(todo, projUID, tbody);
   });
 };
 
-export function generateRow(todo) {
-    if (projectSelected !== todo.project) return;
+export function generateRow(todo, currentProjUID, tbody) {
+    const todoProjUID = typeof todo.project === "string" ? todo.project : todo.project?.UID;
+    if (todoProjUID !== currentProjUID) return;
 
-    const tbody = document.querySelector("tbody")
+    // ✅ minimal: fallback to current table tbody if not provided
+    if (!tbody) tbody = document.querySelector("table tbody");
+    if (!tbody) return;
 
     const tr = document.createElement("tr");
     tr.dataset.uid = todo.UID;

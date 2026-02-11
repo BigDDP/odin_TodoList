@@ -13,11 +13,17 @@ class Todo {
 };
 
 class Project {
-    constructor(item) {
-        this.title = item[0]
-        this.todo = item[1]
-        this.UID = crypto.randomUUID()
-    };
-};
+  constructor(item) {
+    if (Array.isArray(item)) {
+      this.title = item[0];
+      this.todo = item[1] ?? [];
+      this.UID = crypto.randomUUID();
+    } else {
+      this.title = item.title;
+      this.todo = item.todo ?? [];
+      this.UID = item.UID ?? crypto.randomUUID(); // ✅ keep UID if loaded
+    }
+  }
+}
 
 export { Todo, Project }

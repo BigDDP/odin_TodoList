@@ -23,58 +23,64 @@ const handleDom = () => {
         formTodo.style.display = "block";
 
         if (!todo) {
-        formTodo.reset();
-        return;
+            formTodo.reset();
+            
+            return;
         }
 
-        // populate fields (edit mode)
         formTodo.querySelector('[name="title"]').value = todo.title ?? "";
         formTodo.querySelector('[name="dueDate"]').value = todo.dueDate ?? "";
         formTodo.querySelector('[name="description"]').value = todo.description ?? "";
         formTodo.querySelector('[name="notes"]').value = todo.notes ?? "";
         formTodo.querySelector('[name="priority"]').value = todo.priority ?? "";
-        formTodo.querySelector('[name="project"]').value = todo.project?.UID ?? "";
+
+        const projValue =
+        typeof todo.project === "string" ? todo.project : todo.project?.UID;
+
+        formTodo.querySelector('[name="project"]').value = projValue ?? "";
 
         const widget = formTodo.querySelector('.checklist[data-name="checklist"]');
         const list = widget?.querySelector(".checklist-list");
+
         if (list) {
-        list.innerHTML = "";
+            list.innerHTML = "";
 
-        todo.checklist?.forEach(({ job, status }) => {
-            const row = document.createElement("div");
-            row.className = "checklist-row";
+            todo.checklist?.forEach(({ job, status }) => {
+                const row = document.createElement("div");
+                row.className = "checklist-row";
 
-            const cb = document.createElement("input");
-            cb.type = "checkbox";
-            cb.checked = !!status;
-            cb.dataset.role = "done";
+                const cb = document.createElement("input");
+                cb.type = "checkbox";
+                cb.checked = !!status;
+                cb.dataset.role = "done";
 
-            const input = document.createElement("input");
-            input.type = "text";
-            input.placeholder = "Checklist item…";
-            input.value = job ?? "";
-            input.dataset.role = "text";
+                const input = document.createElement("input");
+                input.type = "text";
+                input.placeholder = "Checklist item…";
+                input.value = job ?? "";
+                input.dataset.role = "text";
 
-            const idx = list.children.length;
-            input.name = `checklist[${idx}][text]`;
-            cb.name = `checklist[${idx}][done]`;
-            cb.value = cb.checked ? "1" : "0";
-            cb.onchange = () => cb.value = cb.checked ? "1" : "0";
+                const idx = list.children.length;
+                input.name = `checklist[${idx}][text]`;
+                cb.name = `checklist[${idx}][done]`;
+                cb.value = cb.checked ? "1" : "0";
+                cb.onchange = () => cb.value = cb.checked ? "1" : "0";
 
-            const delBtn = document.createElement("button");
-            delBtn.type = "button";
-            delBtn.textContent = "Delete";
-            delBtn.addEventListener("click", () => row.remove());
+                const delBtn = document.createElement("button");
+                delBtn.type = "button";
+                delBtn.textContent = "Delete";
+                delBtn.addEventListener("click", () => row.remove());
 
-            row.append(cb, input, delBtn);
-            list.appendChild(row);
-        });
+                row.append(cb, input, delBtn);
+                list.appendChild(row);
+            });
+            return;
         }
 
-    } else {
-        formTodo.style.display = "none";
-        formTodo.reset();
-    }
+        } else {
+            formTodo.style.display = "none";
+            formTodo.reset();
+        }
     };
 
     return { toggleProjPopup, toggleTodoPopup };
@@ -115,8 +121,9 @@ const handleEvent = (() => {
 
         projectList.push(newProjObj);
         console.log("New Project: ", projectList);
+
+        persist();
         handleDom().toggleProjPopup();
-        
         appendSidebar(newProjObj.UID);
     };
 
@@ -159,24 +166,24 @@ const handleEvent = (() => {
 
         const project = projectList.find(p => p.UID === data.project);
         if (!project) {
-            console.error("Project not found for UID:", data.project);
-            return;
+        console.error("Project not found for UID:", data.project);
+        return;
         }
 
         const newTodoObj = new Todo({
-            ...data,
-            project
+        ...data,
+        project: project.UID
         });
 
         project.todo.push(newTodoObj);
         todoList.push(newTodoObj);
 
-        console.log("New Todo:", newTodoObj);
-        console.log("Attached to:", project);
-
+        persist();
         handleDom().toggleTodoPopup();   
         
-        generateRow(newTodoObj);
+        const table = document.querySelector(`table[data-uid="${project.UID}"]`);
+        const tbody = table?.querySelector("tbody");
+        if (tbody) generateRow(newTodoObj, tbody);
     };
 
     const deleteProj = (e) => {
@@ -189,3 +196,8 @@ const handleEvent = (() => {
 
     return { newProjSubmit, newTodoSubmit, deleteProj, deleteTodo}
 })();
+
+function persist() {
+  localStorage.setItem("projectList", JSON.stringify(projectList));
+  localStorage.setItem("todoList", JSON.stringify(todoList));
+}
