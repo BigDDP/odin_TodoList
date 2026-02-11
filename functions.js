@@ -3,6 +3,7 @@ import { Todo, Project } from "./models/classes.js"
 
 import formProj from "./components/form_proj.js"
 import formTodo, { refreshProjectOptions } from "./components/form_todo.js"
+import buildTable, {generateRow} from "./components/table.js"
 
 const handleDom = () => {
     const toggleProjPopup = () => {
@@ -17,7 +18,6 @@ const handleDom = () => {
     const isHidden = formTodo.style.display === "none";
 
     if (isHidden) {
-        // opening
         refreshProjectOptions();
         formTodo.style.display = "block";
 
@@ -34,7 +34,6 @@ const handleDom = () => {
         formTodo.querySelector('[name="priority"]').value = todo.priority ?? "";
         formTodo.querySelector('[name="project"]').value = todo.project?.UID ?? "";
 
-        // rebuild checklist UI
         const widget = formTodo.querySelector('.checklist[data-name="checklist"]');
         const list = widget?.querySelector(".checklist-list");
         if (list) {
@@ -72,7 +71,6 @@ const handleDom = () => {
         }
 
     } else {
-        // closing
         formTodo.style.display = "none";
         formTodo.reset();
     }
@@ -82,6 +80,8 @@ const handleDom = () => {
 };
 
 export default () => {
+    buildTable();
+
     const newProjBtn = document.getElementById("new_project");
     const newTodoBtn = document.getElementById("new_todo");
 
@@ -171,7 +171,9 @@ const handleEvent = (() => {
         console.log("New Todo:", newTodoObj);
         console.log("Attached to:", project);
 
-        handleDom().toggleTodoPopup();    
+        handleDom().toggleTodoPopup();   
+        
+        generateRow(newTodoObj);
     };
 
     const deleteProj = (e) => {
