@@ -1,4 +1,4 @@
-import { projectList, status, updateTodoStatus, updateChecklistStatus, editTodo, removeTodo } from "../models/variables.js";
+import { projectList, status, updateTodoStatus, updateChecklistStatus, removeTodo } from "../models/variables.js";
 
 export default function projectSelect(projUID) {
   const proj = projectList.find(p => p.UID === projUID);
@@ -17,12 +17,17 @@ function generateTable(proj, projUID) {
   header.textContent = proj.title;
 
   const colgroup = document.createElement("colgroup");
-  for (let i = 0; i < 5; i++) colgroup.appendChild(document.createElement("col"));
+  for (let i = 0; i < 5; i++) {
+    const col = document.createElement("col");
+    col.id = `col${1}`;
+    colgroup.appendChild(col);
+    
+  };
   table.appendChild(colgroup);
 
   const thead = document.createElement("thead");
   const headRow = document.createElement("tr");
-  ["", "General", "Checklist", "Notes"].forEach(text => {
+  ["", "General", "Checklist", "Notes", ""].forEach(text => {
     const th = document.createElement("th");
     th.textContent = text;
     headRow.appendChild(th);
@@ -41,7 +46,6 @@ export function generateRow(todo, currentProjUID, tbody) {
     const todoProjUID = typeof todo.project === "string" ? todo.project : todo.project?.UID;
     if (todoProjUID !== currentProjUID) return;
 
-    // ✅ minimal: fallback to current table tbody if not provided
     if (!tbody) tbody = document.querySelector("table tbody");
     if (!tbody) return;
 
@@ -91,6 +95,7 @@ export function generateRow(todo, currentProjUID, tbody) {
     // ---- TD 3: Checklist
     const tdChecklist = document.createElement("td");
     const checklistWrap = document.createElement("div");
+    checklistWrap.className = "tb_checklist"
 
     tdChecklist.append(checklistWrap);
 
@@ -136,7 +141,9 @@ export function generateRow(todo, currentProjUID, tbody) {
     tdBtn.appendChild(deleteBtn);
     tr.appendChild(tdBtn);        
 
-    [tdPriority, tdGeneral, tdNotes].forEach(cell => cell.addEventListener("click", () => editTodo(todo)));
+    const rowClick = [tdPriority, tdGeneral, tdNotes].forEach(cell => cell.addEventListener("click", todo));
 
     tbody.appendChild(tr);
+
+    return {rowClick}
 }

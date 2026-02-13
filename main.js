@@ -35,10 +35,6 @@ import { Todo, Project } from "./models/classes.js"
     defaultSetup();
   };
 
-    console.log("Initial Todo: ", todoList);
-    console.log("Initial Project", projectList);
-    console.log("Init Over ---");
-
     initialiseProject();
 })();
 

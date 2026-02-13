@@ -40,7 +40,7 @@ function selectProject(projectUID) {
   if (!projectSelected) return;
 
   buttonsArr.forEach(btn => {
-    btn.style.backgroundColor = (btn.value === projectUID) ? "yellow" : "white";
+    btn.value === projectUID ? btn.classList.add("active") : btn.classList.remove("active");
   });
 
   buildTable(projectUID);

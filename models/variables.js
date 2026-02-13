@@ -22,10 +22,6 @@ function updateTodoStatus(todoUID, status) {
   todo.status = status;
 }
 
-function editTodo(todoUID) {
-  console.log("EditTodo")
-}
-
 function removeProject(projectUID) {
   const index = projectList.findIndex(p => p.UID === projectUID);
   if (index === -1) return;
@@ -81,5 +77,5 @@ export {
   projectList, todoList, 
   priority, status, 
   addProject, removeProject,
-  addTodo, updateTodoStatus, updateChecklistStatus, editTodo, removeTodo
+  addTodo, updateTodoStatus, updateChecklistStatus, removeTodo
 }

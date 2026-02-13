@@ -1,3 +1,238 @@
-table {
-    width: 100%;
+:root{
+  --color-bg:        #FAF7F2;
+  --color-surface:   #FFFFFF;
+  --color-panel:     #F3EEE7;
+  --color-primary:   #D8C7B8;
+  --color-secondary: #E6DDD3;
+  --color-tertiary:  #EAD6DF;
+  --color-border:    #D7CBBF;
+
+  --color-text-dark: #2B2B2B;
+  --color-text-muted:#5A5A5A;
+
+  --radius: 3px;
+  --ring: 2px;
+}
+
+*{ box-sizing:border-box; }
+
+body, html{
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: var(--color-text-dark);
+  background: var(--color-bg);
+  padding: 0;
+  margin: 0;
+}
+
+h2 { 
+  font-size:1.25rem; 
+  font-weight:700; 
+}
+
+button.active { 
+  background: var(--color-tertiary); 
+}
+
+button {
+  border:1px solid var(--color-border);
+  background: var(--color-primary);
+  text-align:center; 
+  padding: 0px 8px;
+  height: 32px;
+  font-weight:600;
+  line-height: 1;
+  border-radius: var(--radius);
+  cursor:pointer;
+  transition: background-color .15s ease, transform .15s ease;
+}
+
+button:hover {
+  background-color: var(--color-bg);
+}
+
+button.active:hover {
+  background-color: var(--color-tertiary);
+  cursor:not-allowed;
+}
+
+input:not([type="checkbox"]), select, textarea {
+  padding:4px 8px;
+  min-height: 32px;
+  border-radius: var(--radius);
+  border:1px solid var(--color-border);
+  background: #FFFFFF;
+  color: var(--color-text-dark);
+}
+
+input:focus, select:focus, textarea:focus{
+  outline: none;
+  border-color: var(--color-tertiary);
+  box-shadow: 0 0 0 var(--ring) color-mix(in srgb, var(--color-tertiary) 55%, transparent);
+}
+
+.content {
+
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: none;
+  width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: #fff;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+  z-index: 1000;
+}
+
+.content.open {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.content > button {
+  width: fit-content;
+  margin: 0 0 0 auto ;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translate(-50%, -55%); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+form{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.container{
+  display:grid;
+  grid-template: 1fr / 1fr 7fr;
+  gap:12px;
+  height:100vh;
+  background: var(--color-bg);
+}
+
+#sidebar{
+  min-width: 180px;
+  display:flex;
+  flex-direction:column;
+  gap:24px;
+  padding:16px;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+}
+
+.sidebar_projects{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.sidebar_header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px
+  ;
+}
+
+.project_btn{
+  border:1px solid var(--color-border);
+  background: var(--color-secondary);
+  color: var(--color-text-dark);
+  font-weight:600;
+}
+
+.table_container{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  padding:16px;
+}
+
+table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  background:#FFFFFF;
+  border:1px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow:hidden;
+}
+
+thead{
+  background: var(--color-secondary);
+}
+
+thead td, thead th{
+  padding:12px;
+  font-weight:800;
+  text-align:left;
+}
+
+th:nth-child(1),
+td:nth-child(1) {
+  min-width: 60px;
+}
+
+th:nth-child(2),
+td:nth-child(2) {
+  min-width: 240px;
+}
+
+th:nth-child(3),
+td:nth-child(3) {
+  min-width: 320px;
+}
+
+th:nth-child(4),
+td:nth-child(4) {
+  min-width: 140px;
+}
+
+th:nth-child(5),
+td:nth-child(5) {
+  min-width: 48px;
+}
+
+tbody tr{
+  border-bottom:1px solid var(--color-border);
+  transition: background-color .12s ease;
+}
+
+tbody tr:hover{
+  background: color-mix(in srgb, var(--color-tertiary) 20%, #FFFFFF);
+}
+
+td, th {
+  padding:8px 8px; 
+}
+
+.tb_checklist{
+  border:1px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow:hidden;
+  background: var(--color-surface);
+}
+
+.checklist-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px 10px;
+  background: transparent;
+}
+
+.checklist-row input[type="checkbox"]{
+  height: 20px;
+  aspect-ratio: 1;
+}
+
+.tb_checklist .checklist-row + .checklist-row{
+  border-top:1px solid var(--color-border);
 }

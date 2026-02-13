@@ -4,86 +4,105 @@ import { Todo, Project } from "./models/classes.js"
 import formProj from "./components/form_proj.js"
 import formTodo, { refreshProjectOptions } from "./components/form_todo.js"
 import buildTable, {generateRow} from "./components/table.js"
-import buildSidebar, { appendSidebar, selectProject } from "./components/sidebar.js"
+import buildSidebar, { appendSidebar } from "./components/sidebar.js"
+
+const contentPopup = document.getElementById("content");
+const closePopup = document.getElementById("close_popup");
 
 const handleDom = () => {
+    closePopup.addEventListener("click", () => {
+        contentPopup.classList.remove("open");
+        formProj.style.display = "none";
+        formProj.reset();
+
+        formTodo.style.display = "none";
+        formTodo.reset();
+    });
+
     const toggleProjPopup = () => {
         let isHidden = formProj.style.display === "none";
-
-        formProj.style.display = isHidden ? "block" : "none";
         
-        if (!isHidden) formProj.reset();
+        if (isHidden) {
+            contentPopup.classList.add("open");
+            formProj.style.display = "block";
+        } else {
+            contentPopup.classList.remove("open");
+            formProj.style.display = "none";
+            formProj.reset();
+        }
     }
 
     const toggleTodoPopup = (todo = null) => {
-    const isHidden = formTodo.style.display === "none";
+        const isHidden = formTodo.style.display === "none";
 
-    if (isHidden) {
-        refreshProjectOptions();
-        formTodo.style.display = "block";
+        if (isHidden) {
+            refreshProjectOptions();
+            formTodo.style.display = "block";
+            contentPopup.classList.add("open");
 
-        if (!todo) {
-            formTodo.reset();
-            
-            return;
-        }
+            if (!todo) {
+                formTodo.reset();
+                
+                return;
+            }
 
-        formTodo.querySelector('[name="title"]').value = todo.title ?? "";
-        formTodo.querySelector('[name="dueDate"]').value = todo.dueDate ?? "";
-        formTodo.querySelector('[name="description"]').value = todo.description ?? "";
-        formTodo.querySelector('[name="notes"]').value = todo.notes ?? "";
-        formTodo.querySelector('[name="priority"]').value = todo.priority ?? "";
+            formTodo.querySelector('[name="title"]').value = todo.title ?? "";
+            formTodo.querySelector('[name="dueDate"]').value = todo.dueDate ?? "";
+            formTodo.querySelector('[name="description"]').value = todo.description ?? "";
+            formTodo.querySelector('[name="notes"]').value = todo.notes ?? "";
+            formTodo.querySelector('[name="priority"]').value = todo.priority ?? "";
 
-        const projValue =
-        typeof todo.project === "string" ? todo.project : todo.project?.UID;
+            const projValue =
+            typeof todo.project === "string" ? todo.project : todo.project?.UID;
 
-        formTodo.querySelector('[name="project"]').value = projValue ?? "";
+            formTodo.querySelector('[name="project"]').value = projValue ?? "";
 
-        const widget = formTodo.querySelector('.checklist[data-name="checklist"]');
-        const list = widget?.querySelector(".checklist-list");
+            const widget = formTodo.querySelector('.checklist[data-name="checklist"]');
+            const list = widget?.querySelector(".checklist-list");
 
-        if (list) {
-            list.innerHTML = "";
+            if (list) {
+                list.innerHTML = "";
 
-            todo.checklist?.forEach(({ job, status }) => {
-                const row = document.createElement("div");
-                row.className = "checklist-row";
+                todo.checklist?.forEach(({ job, status }) => {
+                    const row = document.createElement("div");
+                    row.className = "checklist-row";
 
-                const cb = document.createElement("input");
-                cb.type = "checkbox";
-                cb.checked = !!status;
-                cb.dataset.role = "done";
+                    const cb = document.createElement("input");
+                    cb.type = "checkbox";
+                    cb.checked = !!status;
+                    cb.dataset.role = "done";
 
-                const input = document.createElement("input");
-                input.type = "text";
-                input.placeholder = "Checklist item…";
-                input.value = job ?? "";
-                input.dataset.role = "text";
+                    const input = document.createElement("input");
+                    input.type = "text";
+                    input.placeholder = "Checklist item…";
+                    input.value = job ?? "";
+                    input.dataset.role = "text";
 
-                const idx = list.children.length;
-                input.name = `checklist[${idx}][text]`;
-                cb.name = `checklist[${idx}][done]`;
-                cb.value = cb.checked ? "1" : "0";
-                cb.onchange = () => cb.value = cb.checked ? "1" : "0";
+                    const idx = list.children.length;
+                    input.name = `checklist[${idx}][text]`;
+                    cb.name = `checklist[${idx}][done]`;
+                    cb.value = cb.checked ? "1" : "0";
+                    cb.onchange = () => cb.value = cb.checked ? "1" : "0";
 
-                const delBtn = document.createElement("button");
-                delBtn.type = "button";
-                delBtn.textContent = "Delete";
-                delBtn.addEventListener("click", () => row.remove());
+                    const delBtn = document.createElement("button");
+                    delBtn.type = "button";
+                    delBtn.textContent = "Delete";
+                    delBtn.addEventListener("click", () => row.remove());
 
-                row.append(cb, input, delBtn);
-                list.appendChild(row);
-            });
-            return;
-        }
+                    row.append(cb, input, delBtn);
+                    list.appendChild(row);
+                });
+                return;
+            }
 
         } else {
             formTodo.style.display = "none";
+            contentPopup.classList.remove("open");
             formTodo.reset();
         }
     };
 
-    return { toggleProjPopup, toggleTodoPopup };
+        return { toggleProjPopup, toggleTodoPopup };
 };
 
 export default () => {
@@ -93,6 +112,7 @@ export default () => {
     const newTodoBtn = document.getElementById("new_todo");
 
     newProjBtn.addEventListener("click", () => {
+        formTodo.style.display = "none";
         handleDom().toggleProjPopup();
     });
 
@@ -101,6 +121,7 @@ export default () => {
     });
 
     newTodoBtn.addEventListener("click", () => {
+        formProj.style.display = "none";
         handleDom().toggleTodoPopup();
     });
 
@@ -130,11 +151,7 @@ const handleEvent = (() => {
     const newTodoSubmit = (e) => {
         e.preventDefault();
 
-        console.log("e", e);
-
         const fd = new FormData(e.target);
-
-        console.log("fd", fd);
 
         const data = {
             title: fd.get("title").trim(),
@@ -146,8 +163,6 @@ const handleEvent = (() => {
             checklist: [],
             project: fd.get("project")
         };
-
-        console.log("data", data)
 
         for (const [key, value] of fd.entries()) {
             const m = key.match(/^checklist\[(\d+)\]\[(text|done)\]$/);
@@ -182,8 +197,10 @@ const handleEvent = (() => {
         handleDom().toggleTodoPopup();   
         
         const table = document.querySelector(`table[data-uid="${project.UID}"]`);
+
         const tbody = table?.querySelector("tbody");
-        if (tbody) generateRow(newTodoObj, tbody);
+
+        if (tbody) generateRow(newTodoObj, project.UID, tbody);
     };
 
     const deleteProj = (e) => {
