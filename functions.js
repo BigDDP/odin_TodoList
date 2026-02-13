@@ -2,7 +2,7 @@ import { projectList, todoList, addProject, addTodo, removeProject, removeTodo }
 import { Todo, Project } from "./models/classes.js"
 
 import formProj from "./components/form_proj.js"
-import formTodo, { refreshProjectOptions } from "./components/form_todo.js"
+import formTodo, { refreshProjectOptions, setTodoFormMode } from "./components/form_todo.js"
 import buildTable, {generateRow} from "./components/table.js"
 import buildSidebar, { appendSidebar } from "./components/sidebar.js"
 
@@ -34,6 +34,7 @@ const handleDom = () => {
     }
 
     const toggleTodoPopup = (todo = null) => {
+        setTodoFormMode(todo);
         const isHidden = formTodo.style.display === "none";
 
         if (isHidden) {
@@ -43,7 +44,7 @@ const handleDom = () => {
 
             if (!todo) {
                 formTodo.reset();
-                
+                setTodoFormMode(null);
                 return;
             }
 
@@ -186,16 +187,16 @@ const handleEvent = (() => {
         const fd = new FormData(e.target);
 
         const data = {
-            title: fd.get("title").trim(),
-            status: "PENDING",
+            title: (fd.get("title") ?? "").trim(),
             description: fd.get("description") ?? "",
             dueDate: fd.get("dueDate") ?? "",
-            priority: fd.get("priority")  ?? "LOW",
+            priority: fd.get("priority") ?? "LOW",
             notes: fd.get("notes") ?? "",
             checklist: [],
-            project: fd.get("project")
+            project: fd.get("project"), 
         };
 
+        // Build checklist from FormData
         for (const [key, value] of fd.entries()) {
             const m = key.match(/^checklist\[(\d+)\]\[(text|done)\]$/);
             if (!m) continue;
@@ -208,30 +209,71 @@ const handleEvent = (() => {
             if (field === "text") data.checklist[idx].job = String(value).trim();
             if (field === "done") data.checklist[idx].status = value === "1";
         }
-
         data.checklist = data.checklist.filter(i => i.job);
 
-        const project = projectList.find(p => p.UID === data.project);
-        if (!project) {
-        console.error("Project not found for UID:", data.project);
-        return;
+        const editUid = e.target.dataset.editUid; 
+
+        // -------- EDIT existing todo --------
+        if (editUid) {
+            const todo = todoList.find(t => t.UID === editUid);
+            if (!todo) return;
+
+            const oldProjectUID = typeof todo.project === "string" ? todo.project : todo.project?.UID;
+            const newProjectUID = data.project;
+
+            // update fields (keep UID)
+            todo.title = data.title;
+            todo.description = data.description;
+            todo.dueDate = data.dueDate;
+            todo.priority = data.priority;
+            todo.notes = data.notes;
+            todo.checklist = data.checklist;
+            todo.project = newProjectUID;
+
+            // If project changed, move todo between project.todo arrays
+            if (oldProjectUID !== newProjectUID) {
+                const oldProj = projectList.find(p => p.UID === oldProjectUID);
+                const newProj = projectList.find(p => p.UID === newProjectUID);
+
+                if (oldProj?.todo) oldProj.todo = oldProj.todo.filter(t => t.UID !== todo.UID);
+                if (newProj?.todo) newProj.todo.push(todo);
+            }
+
+            persist();
+            handleDom().toggleTodoPopup();
+
+            // refresh table UI
+            const table = document.querySelector("table");
+            const currentTableProjUID = table?.dataset?.uid;
+
+            // If still viewing same project, update row; else remove it from current table
+            const tr = document.querySelector(`tr[data-uid="${todo.UID}"]`);
+            if (tr) tr.remove();
+
+            const tbody = table?.querySelector("tbody");
+            if (tbody && currentTableProjUID === todo.project) {
+                generateRow(todo, currentTableProjUID, tbody);
+            }
+
+            // clear edit mode
+            delete e.target.dataset.editUid;
+            return;
         }
 
-        const newTodoObj = new Todo({
-        ...data,
-        project: project.UID
-        });
+        // -------- CREATE new todo --------
+        const project = projectList.find(p => p.UID === data.project);
+        if (!project) return;
+
+        const newTodoObj = new Todo({ ...data, status: "PENDING", project: project.UID });
 
         project.todo.push(newTodoObj);
         todoList.push(newTodoObj);
 
         persist();
-        handleDom().toggleTodoPopup();   
-        
+        handleDom().toggleTodoPopup();
+
         const table = document.querySelector(`table[data-uid="${project.UID}"]`);
-
         const tbody = table?.querySelector("tbody");
-
         if (tbody) generateRow(newTodoObj, project.UID, tbody);
     };
 

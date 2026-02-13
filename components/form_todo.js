@@ -15,6 +15,17 @@ form.style.display = "none";
 form.method = "post";
 form.action = "";
 
+function setTodoFormMode(todo = null) {
+  if (!todo) {
+    delete form.dataset.editUid;
+    form.querySelector("#submitTodo").textContent = "Submit Item";
+    return;
+  }
+
+  form.dataset.editUid = todo.UID;
+  form.querySelector("#submitTodo").textContent = "Update Item";
+}
+
 function createChecklistWidget(name) {
   const wrapper = document.createElement("div");
   wrapper.className = "checklist";
@@ -175,6 +186,11 @@ function refreshProjectOptions() {
   if ([...select.options].some(o => o.value === prev)) select.value = prev; 
 }
 
+export function resetChecklistWidget(widget) {
+  const list = widget?.querySelector(".checklist-list");
+  if (!list) return;
+  list.innerHTML = "";
+}
 
 export default form;
-export { refreshProjectOptions };
+export { refreshProjectOptions, setTodoFormMode };
