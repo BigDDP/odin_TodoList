@@ -1,25 +1,33 @@
 let projectList = [];
 let todoList = [];
 
+function saveToStorage() {
+  localStorage.setItem("projectList", JSON.stringify(projectList));
+  localStorage.setItem("todoList", JSON.stringify(todoList));
+}
+
 function addProject(project) {
   projectList.push(project);
+  saveToStorage()
 }
 
 function addTodo(todo) {
   todoList.push(todo);
+  saveToStorage()
 }
-
 
 function updateChecklistStatus(todo, checklistJob, status) {
   const item = todo.checklist?.find(j => j.job === checklistJob);
   if (!item) return;
   item.status = status;
+  saveToStorage();
 }
 
 function updateTodoStatus(todoUID, status) {
   const todo = todoList.find(t => t.UID === todoUID);
   if (!todo) return;
   todo.status = status;
+  saveToStorage();
 }
 
 function removeProject(projectUID) {
@@ -33,6 +41,7 @@ function removeProject(projectUID) {
   }
 
   projectList.splice(index, 1);
+  saveToStorage()
 }
 
 function removeTodo(todoUID) {
@@ -55,6 +64,7 @@ function removeTodo(todoUID) {
   todoList.splice(todoIndex, 1);
 
   console.log(todoList, projectList);
+  saveToStorage()
 }
 
 

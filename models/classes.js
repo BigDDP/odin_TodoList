@@ -8,7 +8,7 @@ class Todo {
         this.notes = item.notes
         this.checklist = item.checklist
         this.project = item.project
-        this.UID = crypto.randomUUID()
+        this.UID = item.UID ?? crypto.randomUUID()
     };
 };
 
@@ -21,7 +21,7 @@ class Project {
     } else {
       this.title = item.title;
       this.todo = item.todo ?? [];
-      this.UID = item.UID ?? crypto.randomUUID(); // ✅ keep UID if loaded
+      this.UID = item.UID ?? crypto.randomUUID();
     }
   }
 }
