@@ -1,7 +1,7 @@
 import { projectList, priority } from "../models/variables.js";
 
 const formStructure = [
-  ["fieldset1", [{ type: "input", value: "title" }, { type: "date", value: "dueDate" }]],
+  ["fieldset1", [{ type: "input", value: "title"}, { type: "date", value: "dueDate" }]],
   ["fieldset2", [{ type: "dropdown", value: "project" }, { type: "dropdown", value: "priority" }]],
   ["fieldset3", [{ type: "textarea", value: "description" }]],
   ["fieldset4", [{ type: "textarea", value: "notes" }]],
@@ -125,6 +125,7 @@ function fillSelect(selectEl, items, { valueKey = null, labelKey = null } = {}) 
           node.type = "text";
           node.name = field.value;
           node.id = field.value;
+          node.placeholder = `Enter ${node.value}...`;
           break;
 
         case "date":
@@ -132,6 +133,7 @@ function fillSelect(selectEl, items, { valueKey = null, labelKey = null } = {}) 
           node.type = "date";
           node.name = field.value;
           node.id = field.value;
+          node.placeholder = `Enter ${node.value}...`;
           break;
 
         case "dropdown":
@@ -153,6 +155,7 @@ function fillSelect(selectEl, items, { valueKey = null, labelKey = null } = {}) 
           node = document.createElement("textarea");
           node.name = field.value;
           node.id = field.value;
+          node.placeholder = `Enter ${field.value}...`;
           break;
 
         case "checklist":

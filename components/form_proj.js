@@ -15,6 +15,7 @@ const input = document.createElement("input");
 input.type = "text";
 input.name = "title";
 input.id = "title";
+input.placeholder = "Enter project title..."
 input.required = true;
 
 const button = document.createElement("button");

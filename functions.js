@@ -25,7 +25,7 @@ const handleDom = () => {
         
         if (isHidden) {
             contentPopup.classList.add("open");
-            formProj.style.display = "block";
+            formProj.style.display = "flex";
         } else {
             contentPopup.classList.remove("open");
             formProj.style.display = "none";
@@ -39,7 +39,7 @@ const handleDom = () => {
 
         if (isHidden) {
             refreshProjectOptions();
-            formTodo.style.display = "block";
+            formTodo.style.display = "flex";
             contentPopup.classList.add("open");
 
             if (!todo) {
