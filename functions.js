@@ -9,6 +9,7 @@ import buildSidebar, { appendSidebar } from "./components/sidebar.js"
 const contentPopup = document.getElementById("content");
 const closePopup = document.getElementById("close_popup");
 
+
 const handleDom = () => {
     closePopup.addEventListener("click", () => {
         contentPopup.classList.remove("open");
@@ -102,8 +103,37 @@ const handleDom = () => {
         }
     };
 
-        return { toggleProjPopup, toggleTodoPopup };
+        return { toggleProjPopup, toggleTodoPopup, wireTableRowOpen };
 };
+
+function wireTableRowOpen() {
+        console.log("wireTableRow")
+        const table = document.querySelector("table");
+        if (!table) return;
+
+        table.addEventListener("click", (e) => {
+            console.log("TableCLick")
+
+            console.log(e.target);
+
+            const td = e.target.closest("tr");
+            if (!td) return;
+
+            console.log(td);
+
+            const tr = td.closest("tr");
+            if (!tr?.dataset?.uid) return;
+
+            console.log(tr);
+
+            const todoUID = tr.dataset.uid;
+            const todo = todoList.find(t => t.UID === todoUID);
+            if (!todo) return;
+
+            formProj.style.display = "none";
+            handleDom().toggleTodoPopup(todo);
+        });
+    }
 
 export default () => {
     buildSidebar(projectList)
@@ -128,6 +158,8 @@ export default () => {
     formTodo.addEventListener("submit", (e) => {
         handleEvent.newTodoSubmit(e);
     });
+
+    wireTableRowOpen();
 
     return { newProjBtn };
 };

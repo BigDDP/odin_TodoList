@@ -55,10 +55,12 @@ export function generateRow(todo, currentProjUID, tbody) {
     // ---- TD 1: Priority
     const tdPriority = document.createElement("td");
     tdPriority.textContent = todo.priority ?? "";
+    tdPriority.classList.add("row_click");
     tr.appendChild(tdPriority);
 
     // ---- TD 2: General (Title - DueDate + project select + description)
     const tdGeneral = document.createElement("td");
+    tdGeneral.classList.add("row_click");
 
     const span = document.createElement("span");
     span.style.display = "flex";
@@ -112,8 +114,9 @@ export function generateRow(todo, currentProjUID, tbody) {
         row.prepend(cb);
         
         cb.addEventListener("click", (e) => {
-            updateChecklistStatus(todo, item.job, e.target.checked)
-            row.style.textDecoration = e.target.checked ? "line-through" : "none";
+          e.stopPropagation();  
+          updateChecklistStatus(todo, item.job, e.target.checked)
+          row.style.textDecoration = e.target.checked ? "line-through" : "none";
         })
 
         checklistWrap.appendChild(row);
@@ -124,6 +127,7 @@ export function generateRow(todo, currentProjUID, tbody) {
 
     // ---- TD 4: Notes
     const tdNotes = document.createElement("td");
+    tdNotes.classList.add("row_click");
     tdNotes.textContent = todo.notes ?? "";
     tr.appendChild(tdNotes);
 
@@ -134,6 +138,7 @@ export function generateRow(todo, currentProjUID, tbody) {
     deleteBtn.id = "tr_deletebtn";
     deleteBtn.value = `${todo.UID}`;
     deleteBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
         removeTodo(e.target.value);
         e.target.closest("tr").remove();
     });
@@ -141,9 +146,6 @@ export function generateRow(todo, currentProjUID, tbody) {
     tdBtn.appendChild(deleteBtn);
     tr.appendChild(tdBtn);        
 
-    const rowClick = [tdPriority, tdGeneral, tdNotes].forEach(cell => cell.addEventListener("click", todo));
-
     tbody.appendChild(tr);
-
-    return {rowClick}
 }
+
